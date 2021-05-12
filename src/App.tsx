@@ -63,7 +63,11 @@ const page: PageBlock = {
 const blocks: Block[] = [page];
 
 const Hello = () => {
-  return <Page page={page} />;
+  return (
+    <div className="w-1/2 mx-auto my-6 min-h-full overflow-scroll">
+      <Page page={page} />
+    </div>
+  );
 };
 
 export default function App() {
@@ -71,13 +75,13 @@ export default function App() {
     <Router>
       <div
         id="app"
-        className="flex flex-row absolute inset-0 bg-white text-center h-full justify justify-center"
+        className="flex flex-row absolute inset-0 bg-white text-center h-full justify justify-center overflow-hidden"
       >
         <Sidebar blocks={blocks} />
         <div id="page-container" className="flex flex-col flex-grow">
           <Navbar />
           <Switch>
-            <div className="w-1/2 mx-auto my-6 min-h-full">
+            <div className="overflow-scroll min-h-full">
               <Route path="/" component={Hello} />
             </div>
           </Switch>

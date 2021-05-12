@@ -1,8 +1,11 @@
 import React from 'react';
 
+/**
+ * Slate Navbar
+ */
 const Navbar = () => {
   return (
-    <div id="navbar" className="m-2 fixed top-0 ">
+    <div id="navbar" className="p-2 flex flex-row ">
       <div>Page 1 &gt; Page 2</div>
     </div>
   );

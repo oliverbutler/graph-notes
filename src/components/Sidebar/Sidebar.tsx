@@ -1,4 +1,5 @@
 import IconRender from 'components/IconRender';
+import Resize from 'components/Resize';
 import React from 'react';
 import { Block, isPageBlock } from 'types/block';
 
@@ -32,9 +33,15 @@ type SidebarProps = {
 
 const Sidebar = ({ blocks }: SidebarProps) => {
   return (
-    <div id="sidebar" className="w-48 bg-gray-50 h-screen">
+    <Resize
+      defaultWindowWidth={192}
+      minWindowWidth={150}
+      dragHandleWidth={4}
+      className="bg-gray-100"
+      dragHandleClassName="bg-gray-200"
+    >
       <RecursivePage blocks={blocks} />
-    </div>
+    </Resize>
   );
 };
 

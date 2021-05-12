@@ -20,7 +20,7 @@ const Page = ({ page }: Props) => {
         <IconRender icon={page.icon} />
       </div>
 
-      <h1 className="text-4xl font-bold">{page.title}</h1>
+      <h1 className="text-4xl font-bold text-left">{page.title}</h1>
       <ContentBlockList blocks={page.children} />
     </div>
   );
