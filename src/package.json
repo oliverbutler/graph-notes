@@ -3,6 +3,7 @@
   "productName": "Slate Client",
   "version": "1.0.0",
   "description": "",
+  "license": "Apache-2.0",
   "main": "./main.prod.js",
   "scripts": {
     "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
