@@ -25,5 +25,5 @@
     "yarn.lock": true,
     "*.{css,sass,scss}.d.ts": true
   },
-  "cSpell.words": ["UUIDV", "hostable"]
+  "cSpell.words": ["Mixin's", "UUIDV", "hostable"]
 }

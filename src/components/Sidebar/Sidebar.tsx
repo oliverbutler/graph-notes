@@ -16,7 +16,8 @@ const RecursivePage = ({ blocks }: RecursivePageProps) => {
           return (
             <div className="ml-3" key={`sidebar-block-${page.id}`}>
               <div className="flex flex-row">
-                <IconRender icon={page.icon} className="mr-1" /> {page.title}
+                <IconRender icon={{ emoji: page.emoji }} className="mr-1" />{' '}
+                {page.title}
               </div>
               {page.children && <RecursivePage blocks={page.children} />}
             </div>
