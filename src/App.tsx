@@ -64,7 +64,7 @@ const blocks: Block[] = [page];
 
 const Hello = () => {
   return (
-    <div className="w-1/2 mx-auto my-6 min-h-full overflow-scroll">
+    <div className="w-1/2 mx-auto my-6 min-h-full ">
       <Page page={page} />
     </div>
   );

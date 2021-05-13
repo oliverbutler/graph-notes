@@ -7,7 +7,13 @@
   "main": "./main.prod.js",
   "scripts": {
     "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
-    "postinstall": "yarn electron-rebuild"
+    "postinstall": "yarn electron-rebuild",
+    "rebuild": "electron-rebuild -f -w sqlite"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/react-beautiful-dnd": "^13.0.0",
+    "sequelize": "^6.6.2",
+    "sqlite3": "5.0.0",
+    "uuid": "^8.3.2"
+  }
 }
