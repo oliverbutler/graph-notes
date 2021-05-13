@@ -82,7 +82,7 @@ Notion is a fantastic tool, it's interface is industry-defining and has caught t
 - ✅ Team oriented design
 - ❌ Closed-source 💔
 - ❌ Cloud based - no offline support
-- ❌ No _true_ data ownership, Employees **can** read your documents 🕵️‍♂️
+- ❌ No _true_ data ownership, Employees **could potentially** read your documents 🕵️‍♂️
 
 ## Obsidian
 
