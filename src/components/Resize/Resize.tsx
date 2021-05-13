@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 // For left hand side resizeable https://codesandbox.io/s/icy-architecture-1qtbz?file=/src/index.tsx
 
@@ -12,6 +12,7 @@ interface Props {
   children: JSX.Element;
   className?: string;
   dragHandleClassName?: string;
+  onSetWidth?: (num: number) => void;
 }
 
 const Resize = ({
@@ -22,12 +23,15 @@ const Resize = ({
   dragHandleWidth,
   className,
   dragHandleClassName,
+  onSetWidth,
 }: Props) => {
   const x = useMotionValue(defaultWindowWidth);
   const width = useTransform(
     x,
     (xSize) => `${xSize + 0.5 * dragHandleWidth}px`
   );
+
+  useEffect(() => {}, [x]);
 
   return (
     <div className="flex flex-row relative">
@@ -45,6 +49,9 @@ const Resize = ({
         style={{ width: dragHandleWidth, x }}
         drag="x"
         dragMomentum={false}
+        onDragEnd={() => {
+          if (onSetWidth) onSetWidth(x.get());
+        }}
         dragConstraints={{
           left: minWindowWidth || undefined,
           right: maxWindowWidth || undefined,
@@ -59,6 +66,7 @@ Resize.defaultProps = {
   dragHandleClassName: '',
   minWindowWidth: null,
   maxWindowWidth: null,
+  onSetWidth: null,
 };
 
 export default Resize;

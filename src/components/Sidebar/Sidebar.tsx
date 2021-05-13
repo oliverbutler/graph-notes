@@ -1,5 +1,6 @@
 import IconRender from 'components/IconRender';
 import Resize from 'components/Resize';
+import useLocalStorage from 'hooks/useLocalStorage';
 import React from 'react';
 import { Block, isPageBlock } from 'types/block';
 
@@ -32,9 +33,12 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ blocks }: SidebarProps) => {
+  const [defaultWidth, setDefaultWidth] = useLocalStorage('sidebar-width', 192);
+
   return (
     <Resize
-      defaultWindowWidth={192}
+      defaultWindowWidth={defaultWidth}
+      onSetWidth={setDefaultWidth}
       minWindowWidth={150}
       dragHandleWidth={4}
       className="bg-gray-100"
