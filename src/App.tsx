@@ -5,7 +5,6 @@ import { Block, PageBlock } from 'types/block';
 import Sidebar from 'components/Sidebar/Sidebar';
 import Navbar from 'components/Navbar/Navbar';
 import Page from 'components/Page/Page';
-import { getRootBlocks } from 'db';
 
 // const Hello = () => {
 //   return (
@@ -15,13 +14,6 @@ import { getRootBlocks } from 'db';
 
 export default function App() {
   const [rootBlocks, setRootBlocks] = useState<PageBlock[]>([]);
-
-  useEffect(() => {
-    const func = async () => {
-      setRootBlocks(await getRootBlocks(true));
-    };
-    func();
-  }, []);
 
   return (
     <Router>

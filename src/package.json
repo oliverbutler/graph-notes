@@ -10,10 +10,5 @@
     "postinstall": "yarn electron-rebuild",
     "rebuild": "electron-rebuild -f -w sqlite"
   },
-  "dependencies": {
-    "@types/react-beautiful-dnd": "^13.0.0",
-    "sequelize": "^6.6.2",
-    "sqlite3": "5.0.0",
-    "uuid": "^8.3.2"
-  }
+  "dependencies": {}
 }
