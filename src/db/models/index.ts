@@ -4,6 +4,7 @@ import { blockFactory } from './block';
 export const dbConfig = new sequelize.Sequelize({
   dialect: 'sqlite',
   storage: './vault/database.db',
+  logging: false,
 });
 
 export const Block = blockFactory(dbConfig);

@@ -1,3 +1,24 @@
+// Value for the object field present with every block
+export enum BlockObjectType {
+  Page = 'page',
+  Block = 'block',
+  Database = 'database',
+}
+
+// Value for the type field found with objects with a object="block"
+export enum BlockType {
+  Paragraph = 'paragraph',
+  Heading1 = 'heading_1',
+  Heading2 = 'heading_2',
+  Heading3 = 'heading_3',
+  BulletedListItem = 'bulleted_list_item',
+  NumberedListItem = 'numbered_list_item',
+  ToDo = 'to_do',
+  Toggle = 'toggle',
+  Location = 'location',
+  PropertyReference = 'property_reference',
+}
+
 export type Icon = {
   emoji: string;
 };
@@ -9,99 +30,79 @@ export type Image = {
   height?: number;
 };
 
-export enum BlockType {
-  Page = 'page',
-  Typography = 'typography',
-}
+export type RichText = {
+  plain_text: string;
+};
 
-// Everything in Notive is a Block blocks have relations with other blocks in a 'tree' https://en.wikipedia.org/wiki/Tree_(data_structure).
-// In our case, a block has ONE parent, and MANY children
+export type PropertyReference = {
+  type: string;
+  id: string;
+  last_updated: Date;
+  timeout: string;
+};
+
+// Every block has certain parameters, these are shown below
 export type Block = {
   id: string;
 
   // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
+  archived: boolean;
+  schemaId: string;
 
+  // Type
+  object: BlockObjectType;
   type: BlockType;
 
-  // Relations
-  parentId: string | null;
-  parent?: Block[];
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Parent
+  parentId: string;
+  parent?: Block;
+
+  // Children
   children?: Block[];
+
+  // Page Fields
+  title?: string;
+  emoji?: string;
+
+  // rich text
+  text?: RichText;
+
+  // to do
+  checked?: boolean;
+
+  // location
+  location?: string;
+
+  // URL
+  url?: string;
+
+  // Phone
+  phone?: string;
+
+  // Property Ref
+  propertyReference?: PropertyReference;
 };
 
-// A specific type of Block called a page
-export interface PageBlock extends Block {
-  title: string;
-  emoji: string;
-  coverPhoto?: Image;
-}
-
-// Any block that can be placed within a page
-export interface ContentBlock extends Block {
-  colour?: string;
-  backgroundColour?: string;
-}
-
-// Specific type of ContentBlock for typography
-export interface TypographyBlock extends ContentBlock {
-  variant: 'h1' | 'h2' | 'h3' | 'p';
-  text: string;
-}
-
 /**
- * Check if a given block is a PageBlock
+ * Check if a given block is a Page
  *
  * @param block
  * @returns
  */
-export const isPageBlock = (block: Block): block is PageBlock => {
-  return block.type === BlockType.Page;
+export const isPageBlock = (block: Block): boolean => {
+  return block.object === BlockObjectType.Page;
 };
 
 /**
- * Check if a given block is a ContentBlock
+ * Check if a given block is a content block (e.g. paragraph)
  *
  * @param block
  * @returns
  */
-export const isContentBlock = (block: Block): block is ContentBlock => {
-  const fakeBlock = block as ContentBlock;
-  return (
-    fakeBlock.colour !== undefined && fakeBlock.backgroundColour !== undefined
-  );
-};
-
-/**
- * Check if a given block is a TypographyBlock
- *
- * @param block
- * @returns
- */
-export const isTypographyBlock = (
-  block: Block | ContentBlock
-): block is TypographyBlock => {
-  return block.type === BlockType.Typography;
-};
-
-/**
- * Check if an icon is an Icon
- *
- * @param icon
- * @returns
- */
-export const isIcon = (icon: Icon | Image): icon is Icon => {
-  return (icon as Icon).emoji !== undefined;
-};
-
-/**
- * Check if an icon is an Image
- *
- * @param icon
- * @returns
- */
-export const isImage = (icon: Icon | Image): icon is Image => {
-  return (icon as Image).blurHash !== undefined;
+export const isContentBlock = (block: Block): boolean => {
+  return block.object === BlockObjectType.Block;
 };

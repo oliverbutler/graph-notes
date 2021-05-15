@@ -1,41 +1,38 @@
 <p align="center">
   <a href="https://slate.sh">
     <img src="https://avatars.githubusercontent.com/u/84088102?s=200&v=4" height="160">
-    <h1 align="center">Slate</h1>
+    <h1 align="center">Zenote</h1>
   </a>
 </p>
 
 <p align="center">
-  <a aria-label="Slate Labs" href="https://github.com/slate-labs">
-    <img src="https://img.shields.io/badge/Slate%20Labs-000000.svg?style=for-the-badge&logo=GitHub&labelColor=000">
+   <a href="">
+    <img alt="" src="https://img.shields.io/github/issues/zenote/zenote?style=for-the-badge&labelColor=000000">
   </a>
    <a href="">
-    <img alt="" src="https://img.shields.io/github/issues/slate-labs/slate?style=for-the-badge&labelColor=000000">
-  </a>
-   <a href="">
-    <img alt="" src="https://img.shields.io/github/stars/slate-labs/slate?style=for-the-badge&labelColor=000000">
+    <img alt="" src="https://img.shields.io/github/stars/zenote/zenote?style=for-the-badge&labelColor=000000">
   </a>
   <a href="">
-    <img alt="" src="https://img.shields.io/github/forks/slate-labs/slate?style=for-the-badge&labelColor=000000">
+    <img alt="" src="https://img.shields.io/github/forks/zenote/zenote?style=for-the-badge&labelColor=000000">
   </a>
 </p>
 
-# What is Slate? 🚀
+# What is Zenote? 🚀
 
-Slate intends to take advantages from other such platforms such as Notion and Obsidian and combine them into an extendable, secure, offline-first, rich environment. Most importantly, open-source ❤️.
+Zenote intends to take advantages from other such platforms such as Notion and Obsidian and combine them into an extendable, secure, offline-first, rich environment. Most importantly, open-source ❤️.
 
-> We pledge that Slate's source-code will always remain public, and that we won't hide away features behind a paywall, any services that we do create with a payment, could easily be hosted yourself!
+> We pledge that Zenote's source-code will always remain public, and that we won't hide away features behind a paywall, any services that we do create with a payment, could easily be hosted yourself!
 
 ## Our Values
 
 ### 🥇 Privacy
 
-- You will never hear stories about Slate contributors reading through your personal data.
+- You will never hear stories about Zenote contributors reading through your personal data.
 - Unless you want it to, no data ever leaves your machine.
 
 ### ❤️ Free and Community Driven
 
-- Slate was created by the community, for the community.
+- Zenote was created by the community, for the community.
 
 ### 🌍✂️💻 Offline First
 
@@ -49,29 +46,29 @@ Slate intends to take advantages from other such platforms such as Notion and Ob
 - No overhead from cloud providers
 - Store and read straight from your machine
 
-<!-- # Our Planned Products at Slate
+<!-- # Our Planned Products at Zenote
 
 Below are some of the projects we plan to design and produce, all of our provided services will be open-source and self-hostable, if you want nothing to do with the cloud... Host it yourself!
 
-## ❤️ Slate Client [🚧 WIP]
+## ❤️ Zenote Client [🚧 WIP]
 
-- Electron Based application to write and manage Slate notes
+- Electron Based application to write and manage Zenote notes
 - Share files locally to friends, family, and co-workers on the same network
 
-## 📡 Slate Relay [💡 Idea]
+## 📡 Zenote Relay [💡 Idea]
 
 - Select a file, click share, and we'll host it for you for people to see
 - Publish an API of your chosen content, much like a CMS.
 
-## 🌐 Slate Backup [💡 Idea]
+## 🌐 Zenote Backup [💡 Idea]
 
-- Slate Client would encrypt your files on your machine
+- Zenote Client would encrypt your files on your machine
 - Send them to a secure backup server
 - Backups are ready for when you need them -->
 
 # Alternative Products
 
-At Slate we have identified two of the most powerful note taking platforms, these being Notion and Obsidian. These two platforms give many users two choices: being locked into a cloud based rich text, feature-rich environment. Or being offline and secure, but with the natural limitations of Markdown.
+At Zenote we have identified two of the most powerful note taking platforms, these being Notion and Obsidian. These two platforms give many users two choices: being locked into a cloud based rich text, feature-rich environment. Or being offline and secure, but with the natural limitations of Markdown.
 
 ## Notion
 

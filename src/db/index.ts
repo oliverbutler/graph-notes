@@ -1,5 +1,5 @@
-import { Block, BlockType, PageBlock } from 'types/block';
-import { Block as BlockSQLite, dbConfig } from './models/index';
+import { Block, BlockObjectType } from 'types/block';
+import { Block as DBBlockModel, dbConfig } from './models/index';
 
 export const initDb = async () => {
   await dbConfig.sync({}).catch(() => {
@@ -8,94 +8,77 @@ export const initDb = async () => {
 };
 
 /**
- * Generate block path to reach a root node
- * @param block
- */
-export const getBlockPath = async (blockId: string): Promise<PageBlock[]> => {
-  let foundRoot = false;
-  let currentTarget = blockId;
-  const path: PageBlock[] = [];
-
-  while (!foundRoot) {
-    // eslint-disable-next-line no-await-in-loop
-    const res = await BlockSQLite.findOne({ where: { id: currentTarget } });
-
-    if (!res) {
-      foundRoot = true;
-      return path;
-    }
-
-    path.push(res.get() as PageBlock);
-
-    if (!res.parentId) {
-      foundRoot = true;
-      return path;
-    }
-
-    currentTarget = res.parentId;
-  }
-
-  return path;
-};
-
-/**
- * Return all Root blocks
+ * Return all sub-blocks of a parent
  *
  * @param withChildren
  * @returns
  */
-export const getRootBlocks = async (
-  withChildren = false
-): Promise<PageBlock[]> => {
-  const res = await BlockSQLite.findAll({
-    where: { type: BlockType.Page, parentId: null },
-    include: withChildren ? 'children' : undefined,
+
+export const getSubPages = async (
+  parentId: string | null,
+  children = false
+): Promise<Block[]> => {
+  const res = await DBBlockModel.findAll({
+    where: { object: BlockObjectType.Page, parentId },
+    include: children ? 'children' : undefined,
   });
 
-  return res.map((b) => b.get() as PageBlock);
+  return res.map((b) => b.get() as Block);
 };
 
 /**
- * Create a new Block given it's params + parent
+ * Return all pages in the DB (mainly used to populate the sidebar and navigation)
  *
- * @param parent Parent of the block
- * @param type
  * @returns
  */
-export const addNewPage = async (parent: string | null): Promise<void> => {
-  // Check parent is valid
-  if (parent != null) {
-    const res = await BlockSQLite.findAll({ where: { id: parent } });
-    if (res.length === 0) throw new Error('Parent not found');
-  }
+export const getAllPages = async (): Promise<Block[]> => {
+  const res = await DBBlockModel.findAll({
+    where: { object: BlockObjectType.Page },
+  });
+
+  return res.map((b) => b.get() as Block);
 };
 
 /**
- * Generate some demo pages
+ * Create a new blank page
+ *
+ * @param parent Parent of the block
+ * @returns
  */
-export const initDemoPages = async () => {
-  const page1 = await BlockSQLite.create({
-    type: BlockType.Page,
-    title: 'Page 1',
-    emoji: '🚀',
+export const addNewBlankPage = async (
+  parentId: string | null
+): Promise<Block> => {
+  // Check parent is valid
+  if (parentId != null) {
+    const res = await DBBlockModel.findAll({ where: { id: parentId } });
+    if (res.length === 0) throw new Error('Parent not found');
+  }
+
+  const icons = ['🚀', '❤️', '🙏', '🎉', '✅'];
+
+  // Build the new page
+  const res = await DBBlockModel.create({
+    parentId: parentId || undefined,
+    archived: false,
+    object: BlockObjectType.Page,
+    emoji: icons[Math.floor(Math.random() * icons.length)],
   });
 
-  const subpage = await BlockSQLite.create({
-    type: BlockType.Page,
-    title: 'Sub Page',
-    emoji: '🧠',
-  });
+  return res.get() as Block;
+};
 
-  subpage.setParent(page1);
+/**
+ * Delete a block given its ID
+ *
+ * @param blockId
+ * @returns
+ */
+export const deleteBlock = async (blockId: string): Promise<boolean> => {
+  const doc = await DBBlockModel.findOne({ where: { id: blockId } });
 
-  BlockSQLite.create({
-    type: BlockType.Page,
-    title: 'Page 2',
-    emoji: '❤️',
-  });
-  BlockSQLite.create({
-    type: BlockType.Page,
-    title: 'Todo List',
-    emoji: '✅',
-  });
+  if (!doc) {
+    return false;
+  }
+
+  return doc.destroy().then(() => true);
 };

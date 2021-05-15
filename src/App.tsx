@@ -1,46 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+/* eslint-disable react/require-default-props */
+import React, { useEffect } from 'react';
 import './App.global.css';
-import { Block, PageBlock } from 'types/block';
 import Sidebar from 'components/Sidebar/Sidebar';
-import Navbar from 'components/Navbar/Navbar';
+
+// Redux
+import { configureStore, IAppState } from 'redux/reducers';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import actions from 'redux/actions';
 import Page from 'components/Page/Page';
-import { getRootBlocks } from 'db';
+import Navbar from 'components/Navbar/Navbar';
 
-// const Hello = () => {
-//   return (
+export const store = configureStore();
 
-//   );
-// };
+type WrapperProps = {
+  children?: JSX.Element;
+};
 
-export default function App() {
-  const [rootBlocks, setRootBlocks] = useState<PageBlock[]>([]);
+const Wrapper = ({ children }: WrapperProps) => {
+  const dispatch = useDispatch();
+
+  const currentPage = useSelector(
+    (state: IAppState) => state.pageState.currentPage
+  );
 
   useEffect(() => {
-    const func = async () => {
-      setRootBlocks(await getRootBlocks(true));
+    const doAsync = async () => {
+      dispatch(actions.pages.fetchAllPagesActionCreator());
     };
-    func();
-  }, []);
+    doAsync();
+  }, [dispatch]);
 
   return (
-    <Router>
-      <div
-        id="app"
-        className="flex flex-row absolute inset-0 bg-white text-center h-full justify justify-center overflow-hidden"
-      >
-        <Sidebar blocks={rootBlocks} />
-        <div id="page-container" className="flex flex-col flex-grow">
-          {rootBlocks[0] && <Navbar pageBlock={rootBlocks[0]} />}
-          <Switch>
-            <div className="overflow-scroll min-h-full">
-              <div className="w-1/2 mx-auto my-6 min-h-full ">
-                {rootBlocks[0] && <Page page={rootBlocks[0]} />}
-              </div>
-            </div>
-          </Switch>
+    <div
+      id="app"
+      className="flex flex-row absolute inset-0 bg-white text-center h-full justify justify-center overflow-hidden"
+    >
+      <Sidebar />
+      <div id="page-container" className="flex flex-col flex-grow">
+        <Navbar />
+        <div className="overflow-scroll min-h-full">
+          <div className="w-1/2 mx-auto my-6 min-h-full ">
+            {currentPage ? <Page /> : <h1>Add a page to get started!</h1>}
+          </div>
         </div>
       </div>
-    </Router>
+    </div>
   );
-}
+};
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <Wrapper />
+    </Provider>
+  );
+};
+
+export default App;
