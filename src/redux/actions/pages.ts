@@ -63,6 +63,8 @@ function createPageActionCreator(parentId: string | null) {
       page,
     };
 
+    changeCurrentPage(page.id);
+
     return dispatch(createPageAction);
   };
 }

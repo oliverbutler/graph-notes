@@ -1,8 +1,7 @@
 import React from 'react';
-import { Plus } from 'react-feather';
 
 type Props = {
-  icon?: string;
+  icon?: JSX.Element;
   text?: string;
   onClick: any;
 };
@@ -14,7 +13,7 @@ const IconButton = ({ icon, text, onClick }: Props) => {
       onClick={onClick}
       type="button"
     >
-      <Plus />
+      {icon}
       <p>{text}</p>
     </button>
   );
