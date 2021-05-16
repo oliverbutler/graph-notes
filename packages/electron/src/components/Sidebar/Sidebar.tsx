@@ -1,14 +1,14 @@
 import IconButton from 'components/IconButton/IconButton';
-import IconRender from 'components/IconRender';
 import Resize from 'components/Resize';
 import useLocalStorage from 'hooks/useLocalStorage';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Block } from 'types/block';
 import { useDispatch, useSelector } from 'react-redux';
 import actions from 'redux/actions';
 import { IAppState } from 'redux/reducers';
-import { Plus, X } from 'react-feather';
-import { motion } from 'framer-motion';
+import { Plus, X, Minus } from 'react-feather';
+
+import TreeBuilder from './TreeBuilder';
 
 import Tree, {
   mutateTree,
@@ -20,61 +20,95 @@ import Tree, {
   TreeSourcePosition,
   TreeDestinationPosition,
 } from '@atlaskit/tree';
+import { treeFromFlattenedTree } from 'libs/tree';
 
-type RecursivePageProps = {
-  parentId: string | null;
+const getIcon = (
+  item: TreeItem,
+  onExpand: (itemId: ItemId) => void,
+  onCollapse: (itemId: ItemId) => void
+) => {
+  if (item.children && item.children.length > 0) {
+    return item.isExpanded ? (
+      <button onClick={() => onCollapse(item.id)}>
+        <Minus size="15" />
+      </button>
+    ) : (
+      <button onClick={() => onExpand(item.id)}>
+        <Plus size="15" />
+      </button>
+    );
+  }
+  return <div>&bull;</div>;
 };
 
-/**
- * Renders from a chosen block down
- */
-const RecursivePage = ({ parentId }: RecursivePageProps) => {
-  const dispatch = useDispatch();
-
-  const pages: Block[] = useSelector((state: IAppState) =>
-    state.pageState.pages.filter((p) => p.parentId === parentId)
-  );
-
-  return (
-    <div key="sidebar-block-group" className="">
-      {pages.map((page) => (
-        <div
-          className="ml-3 cursor-pointer select-none"
-          key={`sidebar-block-${page.id}`}
-        >
-          <div
-            className="flex flex-row"
-            onClick={() => dispatch(actions.pages.changeCurrentPage(page.id))}
-          >
-            <IconRender icon={page.emoji} className="mr-1" />{' '}
-            {page.title || 'Untitled'}
-            <motion.div className="ml-auto z-10 hover:opacity-100 opacity-0 flex flex-row">
-              <IconButton
-                icon={<X size="15" />}
-                onClick={() =>
-                  dispatch(actions.pages.deletePageActionCreator(page.id))
-                }
-              />
-              <IconButton
-                icon={<Plus size="15" />}
-                onClick={() =>
-                  dispatch(actions.pages.createPageActionCreator(page.id))
-                }
-              />
-            </motion.div>
-          </div>
-          <RecursivePage parentId={page.id} />
-        </div>
-      ))}
-    </div>
-  );
-};
+const exampleData: TreeData = new TreeBuilder(1)
+  .withLeaf(0) // 0
+  .withLeaf(1) // 1
+  .withSubTree(
+    new TreeBuilder(2) // 2
+      .withLeaf(0) // 3
+      .withLeaf(1) // 4
+  )
+  .withLeaf(3) // 7
+  .build();
 
 const Sidebar = () => {
   // Store sidebar width in local storage
   const [defaultWidth, setDefaultWidth] = useLocalStorage('sidebar-width', 192);
 
+  const [treeData, setTreeData] = useState<TreeData>(exampleData);
+
   const dispatch = useDispatch();
+
+  const pages: Block[] = useSelector(
+    (state: IAppState) => state.pageState.pages
+  );
+
+  // Upon sidebar load, compute the tree structure
+  useEffect(() => {
+    const treeFromPageStore = treeFromFlattenedTree(pages);
+
+    console.log(pages, treeFromPageStore);
+  }, []);
+
+  const renderItem = ({
+    item,
+    onExpand,
+    onCollapse,
+    provided,
+  }: RenderItemParams) => {
+    return (
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        className="flex flex-row"
+      >
+        {getIcon(item, onExpand, onCollapse)}
+        <p>{item.data.title}</p>
+      </div>
+    );
+  };
+
+  const onExpand = (itemId: ItemId) => {
+    setTreeData(mutateTree(treeData, itemId, { isExpanded: true }));
+  };
+
+  const onCollapse = (itemId: ItemId) => {
+    setTreeData(mutateTree(treeData, itemId, { isExpanded: false }));
+  };
+
+  const onDragEnd = (
+    source: TreeSourcePosition,
+    destination?: TreeDestinationPosition
+  ) => {
+    if (!destination) {
+      return;
+    }
+    const newTree = moveItemOnTree(treeData, source, destination);
+
+    setTreeData(newTree);
+  };
 
   return (
     <Resize
@@ -86,7 +120,17 @@ const Sidebar = () => {
       dragHandleClassName="bg-gray-200"
     >
       <div className="flex flex-col h-full py-2">
-        <RecursivePage parentId={null} />
+        <div className="overflow-auto h-full">
+          <Tree
+            tree={treeData}
+            renderItem={renderItem}
+            onExpand={onExpand}
+            onCollapse={onCollapse}
+            onDragEnd={onDragEnd}
+            isDragEnabled
+            isNestingEnabled
+          />
+        </div>
         <div className="mt-auto">
           <IconButton
             icon={<Plus size="15" />}
