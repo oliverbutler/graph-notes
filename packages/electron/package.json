@@ -211,6 +211,7 @@
     "yarn-deduplicate": "^3.1.0"
   },
   "dependencies": {
+    "@atlaskit/tree": "^8.2.0",
     "@types/react-beautiful-dnd": "^13.0.0",
     "classnames": "^2.3.1",
     "electron-debug": "^3.1.0",
@@ -227,6 +228,7 @@
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
     "redux": "^4.1.0",
+    "redux-offline": "^2.0.0",
     "redux-thunk": "^2.3.0",
     "regenerator-runtime": "^0.13.5",
     "source-map-support": "^0.5.19",
