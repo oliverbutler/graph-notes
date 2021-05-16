@@ -8,6 +8,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import actions from 'redux/actions';
 import { IAppState } from 'redux/reducers';
 import { Plus, X } from 'react-feather';
+import { motion } from 'framer-motion';
+
+import Tree, {
+  mutateTree,
+  moveItemOnTree,
+  RenderItemParams,
+  TreeItem,
+  TreeData,
+  ItemId,
+  TreeSourcePosition,
+  TreeDestinationPosition,
+} from '@atlaskit/tree';
 
 type RecursivePageProps = {
   parentId: string | null;
@@ -36,22 +48,20 @@ const RecursivePage = ({ parentId }: RecursivePageProps) => {
           >
             <IconRender icon={page.emoji} className="mr-1" />{' '}
             {page.title || 'Untitled'}
-            <div className="ml-auto z-10">
+            <motion.div className="ml-auto z-10 hover:opacity-100 opacity-0 flex flex-row">
               <IconButton
                 icon={<X size="15" />}
                 onClick={() =>
                   dispatch(actions.pages.deletePageActionCreator(page.id))
                 }
               />
-            </div>
-            <div className="z-10">
               <IconButton
                 icon={<Plus size="15" />}
                 onClick={() =>
                   dispatch(actions.pages.createPageActionCreator(page.id))
                 }
               />
-            </div>
+            </motion.div>
           </div>
           <RecursivePage parentId={page.id} />
         </div>
