@@ -8,7 +8,7 @@ import actions from 'redux/actions';
 import { IAppState } from 'redux/reducers';
 import { Plus, X, Minus } from 'react-feather';
 
-import TreeBuilder from './TreeBuilder';
+import { buildTreeFromPages } from './treeBuilder';
 
 import Tree, {
   mutateTree,
@@ -20,7 +20,6 @@ import Tree, {
   TreeSourcePosition,
   TreeDestinationPosition,
 } from '@atlaskit/tree';
-import { treeFromFlattenedTree } from 'libs/tree';
 
 const getIcon = (
   item: TreeItem,
@@ -41,35 +40,27 @@ const getIcon = (
   return <div>&bull;</div>;
 };
 
-const exampleData: TreeData = new TreeBuilder(1)
-  .withLeaf(0) // 0
-  .withLeaf(1) // 1
-  .withSubTree(
-    new TreeBuilder(2) // 2
-      .withLeaf(0) // 3
-      .withLeaf(1) // 4
-  )
-  .withLeaf(3) // 7
-  .build();
-
 const Sidebar = () => {
   // Store sidebar width in local storage
   const [defaultWidth, setDefaultWidth] = useLocalStorage('sidebar-width', 192);
 
-  const [treeData, setTreeData] = useState<TreeData>(exampleData);
-
-  const dispatch = useDispatch();
-
+  // Pull all pages from the current state
   const pages: Block[] = useSelector(
     (state: IAppState) => state.pageState.pages
   );
 
-  // Upon sidebar load, compute the tree structure
-  useEffect(() => {
-    const treeFromPageStore = treeFromFlattenedTree(pages);
+  // build tree structure (required for this library) using a custom function, then update as we move pages around.
+  const [treeData, setTreeData] = useState<TreeData | null>(null);
 
-    console.log(pages, treeFromPageStore);
-  }, []);
+  // Upon Load of pages, build the sidebar tree
+  useEffect(() => {
+    // todo: UNTIL we add tree structure + expanded properties to redux, we hackily don't update the pages
+    if (pages.length > 0 && !treeData) {
+      setTreeData(buildTreeFromPages(pages));
+    }
+  }, [pages]);
+
+  const dispatch = useDispatch();
 
   const renderItem = ({
     item,
@@ -77,27 +68,34 @@ const Sidebar = () => {
     onCollapse,
     provided,
   }: RenderItemParams) => {
+    const page = item.data as Block;
+
     return (
       <div
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
         className="flex flex-row"
+        onClick={() => dispatch(actions.pages.changeCurrentPage(page.id))}
       >
         {getIcon(item, onExpand, onCollapse)}
-        <p>{item.data.title}</p>
+        <p>
+          {page.emoji} {page.title || 'Untitled'}
+        </p>
       </div>
     );
   };
 
   const onExpand = (itemId: ItemId) => {
-    setTreeData(mutateTree(treeData, itemId, { isExpanded: true }));
+    treeData && setTreeData(mutateTree(treeData, itemId, { isExpanded: true }));
   };
 
   const onCollapse = (itemId: ItemId) => {
-    setTreeData(mutateTree(treeData, itemId, { isExpanded: false }));
+    treeData &&
+      setTreeData(mutateTree(treeData, itemId, { isExpanded: false }));
   };
 
+  // Update the view and change the redux state upon dragEnd
   const onDragEnd = (
     source: TreeSourcePosition,
     destination?: TreeDestinationPosition
@@ -105,9 +103,31 @@ const Sidebar = () => {
     if (!destination) {
       return;
     }
-    const newTree = moveItemOnTree(treeData, source, destination);
 
-    setTreeData(newTree);
+    if (treeData) {
+      const newTree = moveItemOnTree(treeData, source, destination);
+
+      // if it actually moved
+      if (source.index != destination.index) {
+        const newParent =
+          destination.parentId === 'root'
+            ? null
+            : destination.parentId.toString();
+
+        const sourceItem =
+          treeData.items[source.parentId].children[source.index];
+
+        // Expand the destination so we can see the new element
+        treeData.items[sourceItem].hasChildren = true;
+        treeData.items[sourceItem].isExpanded = true;
+
+        dispatch(
+          actions.pages.changeBlockParent(sourceItem.toString(), newParent)
+        );
+      }
+
+      setTreeData(newTree);
+    }
   };
 
   return (
@@ -121,15 +141,17 @@ const Sidebar = () => {
     >
       <div className="flex flex-col h-full py-2">
         <div className="overflow-auto h-full">
-          <Tree
-            tree={treeData}
-            renderItem={renderItem}
-            onExpand={onExpand}
-            onCollapse={onCollapse}
-            onDragEnd={onDragEnd}
-            isDragEnabled
-            isNestingEnabled
-          />
+          {treeData && (
+            <Tree
+              tree={treeData}
+              renderItem={renderItem}
+              onExpand={onExpand}
+              onCollapse={onCollapse}
+              onDragEnd={onDragEnd}
+              isDragEnabled
+              isNestingEnabled
+            />
+          )}
         </div>
         <div className="mt-auto">
           <IconButton

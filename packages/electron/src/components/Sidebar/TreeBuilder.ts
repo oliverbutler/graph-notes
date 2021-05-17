@@ -1,3 +1,5 @@
+import { Block } from 'types/block';
+
 export type ItemId = string | number;
 
 export interface TreeData {
@@ -16,68 +18,42 @@ export type TreeItem = {
   data?: TreeItemData;
 };
 
-export default class TreeBuilder {
-  rootId: ItemId;
+/**
+ * Build the redux pages into the tree structure found within @atlaskit/tree
+ *
+ * @param pages
+ * @returns
+ */
+export const buildTreeFromPages = (pages: Block[]) => {
+  let tree: TreeData = {
+    rootId: 'root',
+    items: {
+      root: {
+        id: 'root',
+        children: pages.filter((b) => b.parentId === null).map((b) => b.id),
+        hasChildren: true,
+        isExpanded: true,
+        isChildrenLoading: false,
+      },
+    },
+  };
 
-  items: Record<ItemId, TreeItem>;
+  for (let block of pages) {
+    const childrenIdArray: string[] = pages
+      .filter((b) => b.parentId === block.id)
+      .map((b) => b.id);
 
-  constructor(rootId: ItemId) {
-    const rootItem = this._createItem(`${rootId}`);
-    this.rootId = rootItem.id;
-    this.items = {
-      [rootItem.id]: rootItem,
-    };
-  }
-
-  withLeaf(id: number) {
-    const leafItem = this._createItem(`${this.rootId}-${id}`);
-    this._addItemToRoot(leafItem.id);
-    this.items[leafItem.id] = leafItem;
-    return this;
-  }
-
-  withSubTree(tree: TreeBuilder) {
-    const subTree = tree.build();
-    this._addItemToRoot(`${this.rootId}-${subTree.rootId}`);
-
-    Object.keys(subTree.items).forEach((itemId) => {
-      const finalId = `${this.rootId}-${itemId}`;
-      this.items[finalId] = {
-        ...subTree.items[itemId],
-        id: finalId,
-        children: subTree.items[itemId].children.map(
-          (i) => `${this.rootId}-${i}`
-        ),
-      };
-    });
-
-    return this;
-  }
-
-  build() {
-    return {
-      rootId: this.rootId,
-      items: this.items,
-    };
-  }
-
-  _addItemToRoot(id: string) {
-    const rootItem = this.items[this.rootId];
-    rootItem.children.push(id);
-    rootItem.isExpanded = true;
-    rootItem.hasChildren = true;
-  }
-
-  _createItem = (id: string) => {
-    return {
-      id: `${id}`,
-      children: [],
-      hasChildren: false,
+    tree.items[block.id] = {
+      id: block.id,
+      children: childrenIdArray,
+      hasChildren: childrenIdArray.length > 0 ? true : false,
       isExpanded: false,
       isChildrenLoading: false,
       data: {
-        title: `Title ${id}`,
+        ...block,
       },
     };
-  };
-}
+  }
+
+  return tree;
+};

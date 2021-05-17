@@ -219,6 +219,7 @@
     "electron-updater": "^4.3.4",
     "framer-motion": "^4.1.16",
     "history": "^5.0.0",
+    "normalizr": "^3.6.1",
     "react": "^17.0.1",
     "react-beautiful-dnd": "^13.1.0",
     "react-contenteditable": "^3.3.5",

@@ -1,4 +1,5 @@
 import { Block, BlockObjectType } from 'types/block';
+import { BlockModel } from './models/block';
 import { Block as DBBlockModel, dbConfig } from './models/index';
 
 export const initDb = async () => {
@@ -81,4 +82,38 @@ export const deleteBlock = async (blockId: string): Promise<boolean> => {
   }
 
   return doc.destroy().then(() => true);
+};
+
+/**
+ * Change the parent of a block
+ *
+ * @param blockId
+ * @param newParentId
+ * @returns
+ */
+export const updateBlockParent = async (
+  blockId: string,
+  newParentId: string | null
+): Promise<Block> => {
+  const doc = await DBBlockModel.findOne({ where: { id: blockId } });
+
+  let targetDoc: BlockModel | null = null;
+
+  if (newParentId) {
+    targetDoc = await DBBlockModel.findOne({
+      where: { id: newParentId },
+    });
+
+    if (!targetDoc) {
+      throw new Error('Target Block not Found');
+    }
+  }
+
+  if (!doc) {
+    throw new Error('Block not Found');
+  }
+
+  doc.setParent(targetDoc);
+
+  return doc.get() as Block;
 };

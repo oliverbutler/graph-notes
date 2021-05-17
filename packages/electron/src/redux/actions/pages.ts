@@ -1,8 +1,14 @@
-import { addNewBlankPage, deleteBlock, getSubPages } from 'db';
+import {
+  addNewBlankPage,
+  updateBlockParent,
+  deleteBlock,
+  getAllPages,
+} from 'db';
 import { Dispatch } from 'redux';
 import { IAppState } from 'redux/reducers';
 import {
   IChangePageAction,
+  IChangeUpdatePageAction,
   ICreatePageAction,
   IDeletePageAction,
   IFetchAllPagesAction,
@@ -37,7 +43,7 @@ const changeCurrentPage = (pageId: string | null) => {
  */
 function fetchAllPagesActionCreator() {
   return async (dispatch: Dispatch) => {
-    const pages = await getSubPages(null, false);
+    const pages = await getAllPages();
 
     const fetchAllPagesAction: IFetchAllPagesAction = {
       type: 'FetchAllPages',
@@ -100,9 +106,31 @@ function deletePageActionCreator(pageId: string) {
   };
 }
 
+/**
+ * Change the parent of a page in the DB then update that page within the Redux state,
+ * luckily as we have no backlinks (Currently) we can just find and replace the
+ *
+ * @param pageId
+ * @param newParent
+ * @returns
+ */
+function changeBlockParent(pageId: string, newParentId: string | null) {
+  return async (dispatch: Dispatch) => {
+    const block = await updateBlockParent(pageId, newParentId);
+
+    const updatePageAction: IChangeUpdatePageAction = {
+      type: 'ChangeUpdatePageAction',
+      page: block,
+    };
+
+    return dispatch(updatePageAction);
+  };
+}
+
 export default {
   fetchAllPagesActionCreator,
   createPageActionCreator,
   deletePageActionCreator,
   changeCurrentPage,
+  changeBlockParent,
 };

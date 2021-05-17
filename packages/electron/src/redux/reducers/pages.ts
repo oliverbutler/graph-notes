@@ -26,13 +26,22 @@ export interface IChangePageAction extends Action<'ChangePageAction'> {
   pageId: string | null;
 }
 
+export interface IChangeUpdatePageAction
+  extends Action<'ChangeUpdatePageAction'> {
+  page: Block;
+}
+
 export type PageActions =
   | IFetchAllPagesAction
   | ICreatePageAction
   | IDeletePageAction
-  | IChangePageAction;
+  | IChangePageAction
+  | IChangeUpdatePageAction;
 
-function pagesReducer(state = initialPageState, action: PageActions) {
+function pagesReducer(
+  state = initialPageState,
+  action: PageActions
+): IPageState {
   console.info(`✅ ${action.type}`, action);
   switch (action.type) {
     case 'FetchAllPages':
@@ -54,6 +63,14 @@ function pagesReducer(state = initialPageState, action: PageActions) {
       return {
         ...state,
         currentPage: action.pageId,
+      };
+    case 'ChangeUpdatePageAction':
+      return {
+        ...state,
+        pages: state.pages.map((p) => {
+          if (p.id === action.page.id) return action.page;
+          else return p;
+        }),
       };
     default:
       return state;
