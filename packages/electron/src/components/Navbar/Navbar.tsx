@@ -1,40 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { IAppState } from 'redux/reducers';
+import { IPage } from 'redux/reducers/pages';
 import { Block } from 'types/block';
 
 /**
  * Navbar takes the current page, and works out the path to it
  */
 const Navbar = () => {
-  const pages = useSelector((state: IAppState) => state.pageState.pages);
-  const pageId = useSelector((state: IAppState) => state.pageState.currentPage);
+  const page = useSelector((state: IAppState) =>
+    state.pageState.currentPage
+      ? state.pageState.pages[state.pageState.currentPage]
+      : null
+  );
 
-  const [path, setPath] = useState<Block[]>([]);
+  const [path, setPath] = useState<IPage[]>([]);
 
   // Every time the page changes, re-calculate the path
   useEffect(() => {
-    const newPath: Block[] = [];
-    let target = pageId;
-    let found = false;
-
-    while (!found) {
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
-      const currentPage = pages.find((p) => p.id === target);
-
-      if (currentPage) {
-        newPath.push(currentPage);
-        if (currentPage.parentId) {
-          target = currentPage.parentId;
-        } else {
-          found = true;
-        }
-      } else {
-        found = true;
-      }
-    }
-    setPath(newPath.reverse());
-  }, [pageId, pages]);
+    page && setPath([page]);
+  }, [page]);
 
   return (
     <div id="navbar" className="p-2 flex flex-row ">

@@ -12,12 +12,9 @@ import {
   ICreatePageAction,
   IDeletePageAction,
   IFetchAllPagesAction,
+  IPage,
+  IPageState,
 } from 'redux/reducers/pages';
-import { Block, BlockObjectType } from 'types/block';
-
-// * ALL changes to the state + DB must go through these actions to ensure consistency
-// React Thunk logic inspired from
-// https://www.carlrippon.com/strongly-typed-react-redux-code-with-typescript/
 
 /**
  * Change current page, NOT async, performs immediately
@@ -43,7 +40,30 @@ const changeCurrentPage = (pageId: string | null) => {
  */
 function fetchAllPagesActionCreator() {
   return async (dispatch: Dispatch) => {
-    const pages = await getAllPages();
+    const blocks = await getAllPages();
+
+    let pages: Record<string, IPage> = {};
+
+    for (const block of blocks) {
+      const findChildren = blocks
+        .filter((b) => b.parentId === block.id)
+        .map((b) => b.id);
+
+      pages[block.id] = {
+        id: block.id,
+        parentId: block.parentId,
+
+        // Populate this from local storage
+        isExpanded: true,
+        isChildrenLoading: false,
+
+        hasChildren: findChildren.length > 0,
+        children: findChildren,
+
+        title: block.title,
+        emoji: block.emoji,
+      };
+    }
 
     const fetchAllPagesAction: IFetchAllPagesAction = {
       type: 'FetchAllPages',
@@ -83,18 +103,6 @@ function createPageActionCreator(parentId: string | null) {
  */
 function deletePageActionCreator(pageId: string) {
   return async (dispatch: Dispatch, getState: () => IAppState) => {
-    const { currentPage } = getState().pageState;
-
-    // if we are currently on this page, change pages! 🐇
-    if (pageId === currentPage) {
-      const firstPageInState = getState().pageState.pages.find((p) => {
-        return p.id !== currentPage && p.object === BlockObjectType.Page;
-      });
-
-      if (firstPageInState) changeCurrentPage(firstPageInState.id);
-      else changeCurrentPage(null);
-    }
-
     await deleteBlock(pageId);
 
     const deletePageAction: IDeletePageAction = {
@@ -115,15 +123,89 @@ function deletePageActionCreator(pageId: string) {
  * @returns
  */
 function changeBlockParent(pageId: string, newParentId: string | null) {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => IAppState) => {
+    // To update a blocks parent we must
+    // - Update it's current parent children[] <- Redux
+    // - Update new parent children[] <- Redux
+    // - Update the page itself <- Redux
+    // - Update the page  <- DB
+
+    const currentPageState = getState().pageState;
+
+    // returns string array of all children
+    const getChildrenForPage = (pageId: string): string[] => {
+      return Object.keys(currentPageState.pages).filter(
+        (id) => currentPageState.pages[id].parentId === pageId
+      );
+    };
+
+    // Update the block in the DB
     const block = await updateBlockParent(pageId, newParentId);
+
+    // New Block Children
+    const newBlockChildren = getChildrenForPage(block.id);
+
+    // Updated page entry
+    const newPage: IPage = {
+      id: block.id,
+      parentId: block.parentId,
+
+      // Populate this from local storage
+      isExpanded: true,
+      isChildrenLoading: false,
+
+      hasChildren: newBlockChildren.length > 0,
+      children: newBlockChildren,
+
+      title: block.title,
+      emoji: block.emoji,
+    };
+
+    //! make logic reusable
+    // todo: update hasChildren (or remove)
+
+    const oldParent = currentPageState.pages[pageId];
+    const updatedOldParentChildren = oldParent.children.filter(
+      (p) => p !== pageId
+    );
+    const updatedOldParent = oldParent
+      ? {
+          ...oldParent,
+          children: updatedOldParentChildren,
+          hasChildren: updatedOldParentChildren,
+        }
+      : null;
+
+    const newParent = newParentId ? currentPageState.pages[newParentId] : null;
+    const updatedNewParentChildren = newParent?.children
+      ? [...newParent?.children, pageId]
+      : [pageId];
+    const updatedNewParent = newParent
+      ? {
+          ...newParent,
+          children: updatedNewParentChildren,
+          hasChildren: updatedNewParentChildren.length > 0,
+        }
+      : null;
 
     const updatePageAction: IChangeUpdatePageAction = {
       type: 'ChangeUpdatePageAction',
-      page: block,
+      page: newPage,
     };
 
-    return dispatch(updatePageAction);
+    return (dispatch: Dispatch) => {
+      dispatch(updatePageAction);
+      newParent &&
+        dispatch({
+          type: 'ChangeUpdatePageAction',
+          page: updatedOldParent,
+        });
+      oldParent &&
+        dispatch({
+          type: 'ChangeUpdatePageAction',
+          page: updatedNewParent,
+        });
+    };
   };
 }
 

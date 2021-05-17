@@ -1,22 +1,44 @@
 import { Action } from 'redux';
-import { Block } from 'types/block';
+import { Block, BlockObjectType } from 'types/block';
+import _ from 'lodash';
+
+export interface IPage {
+  id: string;
+  parentId: string | null;
+
+  // Sidebar properties
+  isExpanded: boolean;
+  isChildrenLoading: boolean;
+
+  // Child Pages
+  // hasChildPages: boolean;
+  // childPages: string[];
+
+  // Children
+  hasChildren: boolean;
+  children: string[];
+
+  // Properties
+  title?: string;
+  emoji?: string;
+}
 
 export interface IPageState {
-  readonly pages: Block[];
+  readonly pages: Record<string, IPage>;
   readonly currentPage: string | null;
 }
 
 const initialPageState: IPageState = {
-  pages: [],
+  pages: {},
   currentPage: null,
 };
 
 export interface IFetchAllPagesAction extends Action<'FetchAllPages'> {
-  pages: Block[];
+  pages: Record<string, IPage>;
 }
 
 export interface ICreatePageAction extends Action<'CreatePageAction'> {
-  page: Block;
+  page: IPage;
 }
 export interface IDeletePageAction extends Action<'DeletePageAction'> {
   pageId: string;
@@ -28,7 +50,7 @@ export interface IChangePageAction extends Action<'ChangePageAction'> {
 
 export interface IChangeUpdatePageAction
   extends Action<'ChangeUpdatePageAction'> {
-  page: Block;
+  page: IPage;
 }
 
 export type PageActions =
@@ -52,12 +74,14 @@ function pagesReducer(
     case 'CreatePageAction':
       return {
         ...state,
-        pages: [...state.pages, action.page],
+        pages: {},
       };
     case 'DeletePageAction':
       return {
         ...state,
-        pages: state.pages.filter((p) => p.id !== action.pageId),
+        pages: state.currentPage
+          ? _.omit(state.pages, [state.currentPage])
+          : state.pages,
       };
     case 'ChangePageAction':
       return {
@@ -67,10 +91,10 @@ function pagesReducer(
     case 'ChangeUpdatePageAction':
       return {
         ...state,
-        pages: state.pages.map((p) => {
-          if (p.id === action.page.id) return action.page;
-          else return p;
-        }),
+        pages: {
+          ...state.pages,
+          [action.page.id]: action.page,
+        },
       };
     default:
       return state;

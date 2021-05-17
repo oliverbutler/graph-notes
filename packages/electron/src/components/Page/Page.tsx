@@ -13,7 +13,9 @@ import { IAppState } from 'redux/reducers';
  */
 const Page = () => {
   const page = useSelector((state: IAppState) =>
-    state.pageState.pages.find((p) => p.id === state.pageState.currentPage)
+    state.pageState.currentPage
+      ? state.pageState.pages[state.pageState.currentPage]
+      : null
   );
 
   if (!page) {

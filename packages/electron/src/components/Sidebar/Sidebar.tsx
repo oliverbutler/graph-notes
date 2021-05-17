@@ -6,7 +6,7 @@ import { Block } from 'types/block';
 import { useDispatch, useSelector } from 'react-redux';
 import actions from 'redux/actions';
 import { IAppState } from 'redux/reducers';
-import { Plus, X, Minus } from 'react-feather';
+import { Plus, ArrowDown, ArrowRight } from 'react-feather';
 
 import { buildTreeFromPages } from './treeBuilder';
 
@@ -28,16 +28,16 @@ const getIcon = (
 ) => {
   if (item.children && item.children.length > 0) {
     return item.isExpanded ? (
-      <button onClick={() => onCollapse(item.id)}>
-        <Minus size="15" />
-      </button>
+      <div onClick={() => onCollapse(item.id)} className="hover:bg-gray-100">
+        <ArrowDown size="15" />
+      </div>
     ) : (
-      <button onClick={() => onExpand(item.id)}>
-        <Plus size="15" />
-      </button>
+      <div onClick={() => onExpand(item.id)} className="hover:bg-gray-100">
+        <ArrowRight size="15" />
+      </div>
     );
   }
-  return <div>&bull;</div>;
+  return <div style={{ width: 15 }}></div>;
 };
 
 const Sidebar = () => {
@@ -45,19 +45,14 @@ const Sidebar = () => {
   const [defaultWidth, setDefaultWidth] = useLocalStorage('sidebar-width', 192);
 
   // Pull all pages from the current state
-  const pages: Block[] = useSelector(
-    (state: IAppState) => state.pageState.pages
-  );
+  const pages = useSelector((state: IAppState) => state.pageState.pages);
 
   // build tree structure (required for this library) using a custom function, then update as we move pages around.
   const [treeData, setTreeData] = useState<TreeData | null>(null);
 
   // Upon Load of pages, build the sidebar tree
   useEffect(() => {
-    // todo: UNTIL we add tree structure + expanded properties to redux, we hackily don't update the pages
-    if (pages.length > 0 && !treeData) {
-      setTreeData(buildTreeFromPages(pages));
-    }
+    setTreeData(buildTreeFromPages(pages));
   }, [pages]);
 
   const dispatch = useDispatch();
@@ -68,19 +63,17 @@ const Sidebar = () => {
     onCollapse,
     provided,
   }: RenderItemParams) => {
-    const page = item.data as Block;
-
     return (
       <div
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
-        className="flex flex-row"
-        onClick={() => dispatch(actions.pages.changeCurrentPage(page.id))}
+        className="flex flex-row hover:bg-gray-100"
+        onClick={() => dispatch(actions.pages.changeCurrentPage(item.id))}
       >
         {getIcon(item, onExpand, onCollapse)}
         <p>
-          {page.emoji} {page.title || 'Untitled'}
+          {item.emoji || ''} {item.title || 'Untitled'}
         </p>
       </div>
     );
@@ -106,25 +99,23 @@ const Sidebar = () => {
 
     if (treeData) {
       const newTree = moveItemOnTree(treeData, source, destination);
+      const newParent =
+        destination.parentId === 'root'
+          ? null
+          : destination.parentId.toString();
 
-      // if it actually moved
-      if (source.index != destination.index) {
-        const newParent =
-          destination.parentId === 'root'
-            ? null
-            : destination.parentId.toString();
+      const sourceItem = treeData.items[source.parentId].children[source.index];
 
-        const sourceItem =
-          treeData.items[source.parentId].children[source.index];
+      // Expand the destination so we can see the new element
+      treeData.items[sourceItem].hasChildren = true;
+      treeData.items[sourceItem].isExpanded = true;
 
-        // Expand the destination so we can see the new element
-        treeData.items[sourceItem].hasChildren = true;
-        treeData.items[sourceItem].isExpanded = true;
+      console.log(sourceItem, newParent);
+      console.log(pages[sourceItem], newParent ? pages[newParent] : null);
 
-        dispatch(
-          actions.pages.changeBlockParent(sourceItem.toString(), newParent)
-        );
-      }
+      dispatch(
+        actions.pages.changeBlockParent(sourceItem.toString(), newParent)
+      );
 
       setTreeData(newTree);
     }
