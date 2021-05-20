@@ -1,9 +1,3 @@
-import {
-  addNewBlankPage,
-  updateBlockParent,
-  deleteBlock,
-  getAllPages,
-} from 'db';
 import { Dispatch } from 'redux';
 import { IAppState } from 'redux/reducers';
 import {
@@ -40,7 +34,7 @@ const changeCurrentPage = (pageId: string | null) => {
  */
 function fetchAllPagesActionCreator() {
   return async (dispatch: Dispatch) => {
-    const blocks = await getAllPages();
+    const blocks = [];
 
     let pages: Record<string, IPage> = {};
 

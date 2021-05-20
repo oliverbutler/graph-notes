@@ -213,13 +213,18 @@
   },
   "dependencies": {
     "@atlaskit/tree": "^8.2.0",
+    "@types/js-yaml": "^4.0.1",
+    "@types/line-reader": "^0.0.33",
     "@types/react-beautiful-dnd": "^13.0.0",
     "classnames": "^2.3.1",
+    "directory-tree": "^2.2.9",
     "electron-debug": "^3.1.0",
     "electron-log": "^4.2.4",
     "electron-updater": "^4.3.4",
     "framer-motion": "^4.1.16",
     "history": "^5.0.0",
+    "js-yaml": "^4.1.0",
+    "line-reader": "^0.4.0",
     "lodash": "^4.17.21",
     "normalizr": "^3.6.1",
     "react": "^17.0.1",
@@ -235,7 +240,8 @@
     "redux-thunk": "^2.3.0",
     "regenerator-runtime": "^0.13.5",
     "source-map-support": "^0.5.19",
-    "styled-components": "^5.3.0"
+    "styled-components": "^5.3.0",
+    "yaml-front-matter": "^4.1.1"
   },
   "devEngines": {
     "node": ">=10.x",

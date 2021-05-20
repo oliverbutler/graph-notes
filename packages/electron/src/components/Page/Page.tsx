@@ -36,7 +36,7 @@ const Page = () => {
         {page.title || 'Untitled'}
       </h1>
 
-      <ContentBlockList blocks={page.children} />
+      {/* <ContentBlockList blocks={page.children} /> */}
     </div>
   );
 };
