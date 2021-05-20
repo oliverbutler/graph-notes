@@ -1,7 +1,9 @@
 import yaml from 'js-yaml';
 import lineReader from 'line-reader';
+import fs from 'fs';
 import _ from 'lodash';
 import dirTree, { DirectoryTree } from 'directory-tree';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Asynchronous wrapper to read lines of a file, allows stopping with a false boolean
@@ -116,7 +118,7 @@ export const readMarkdownHeader = async (path: string): Promise<any | null> => {
 
   if (!json) return null;
 
-  return json.xeo ? json.xeo : null;
+  return json;
 };
 
 /**
@@ -131,8 +133,83 @@ export const readXeoMarkdownHeader = async (
 
   if (!result) return undefined;
 
-  if (isValidXeoMarkdownHeader(result)) return result;
+  if (!result.xeo) return undefined;
+
+  const xeo = result.xeo;
+
+  if (isValidXeoMarkdownHeader(xeo)) return xeo;
   else return undefined;
+};
+
+/**
+ * Write/override Xeo markdown header
+ *
+ * @param path
+ * @param header
+ */
+export const writeXeoMarkdownHeader = async (
+  path: string,
+  header: XeoMarkdownHeader
+) => {
+  // Read the existing header, override xeo property but keep others
+  const existingHeader = await readMarkdownHeader(path);
+
+  let newYamlString = yaml
+    .dump({
+      ...existingHeader,
+      xeo: header,
+    })
+    .split('\n');
+
+  newYamlString.unshift('---');
+  newYamlString[newYamlString.length - 1] = '---';
+
+  // make life easier, read whole file to an array
+  let fileContent = fs.readFileSync(path).toString().split('\n');
+
+  // Find
+  let finalIndex = 0;
+  for (let i = 1; i < fileContent.length; i++) {
+    if (fileContent[0] !== '---') {
+      break;
+    }
+    if (fileContent[i] === '---') {
+      finalIndex = i + 1;
+      break;
+    }
+  }
+
+  // Remove the existing header
+  fileContent = fileContent.slice(finalIndex, fileContent.length);
+
+  fileContent = newYamlString.concat(fileContent);
+
+  fs.writeFileSync(path, fileContent.join('\n'), {
+    encoding: 'utf8',
+    flag: 'w',
+  });
+};
+
+/**
+ * Generate new Xeo header and write it to an existing file
+ *
+ * @param path
+ */
+export const generateXeoMarkdownHeader = async (path: string) => {
+  const xeoHeader: XeoMarkdownHeader = {
+    id: uuidv4(),
+    xeoVersion: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    tags: [],
+    links: [],
+    graph: {
+      locked: false,
+      hidden: false,
+    },
+  };
+
+  await writeXeoMarkdownHeader(path, xeoHeader);
 };
 
 /**
@@ -160,14 +237,21 @@ interface RecursiveProps {
 /**
  * For each of the leafs in the tree, add the respective page ID, and also return an array of the cumulative xeo headers
  *
+ * todo if the MD file has no header, initialize one
+ *
  * @param tree
  */
 const recursivelyPopulateDirectoryTree = async (
   tree: DirectoryTree
 ): Promise<RecursiveProps> => {
-  const xeoHeader = await (tree.extension === '.md'
+  let xeoHeader = await (tree.extension === '.md'
     ? readXeoMarkdownHeader(tree.path)
     : undefined);
+
+  // if the markdown header isn't present, create it, also preserve any other YAML a user may have created
+  if (!xeoHeader) {
+    generateXeoMarkdownHeader(tree.path);
+  }
 
   const returned = await (tree.children
     ? Promise.all(
