@@ -50,7 +50,7 @@ interface XeoMarkdownHeaderUnsanitized {
   database?: string;
   createdAt?: string;
   updatedAt?: string;
-  deletedAt?: null | string;
+  deletedAt?: string;
   synchronizedAt?: string;
   icon?: XeoMarkdownHeaderIcon;
   coverPhoto?: XeoMarkdownHeaderCoverPhoto;
@@ -103,6 +103,9 @@ export const readMarkdownHeader = async (path: string): Promise<any | null> => {
   let index = 0;
   let yamlString: string[] = [];
 
+  // hack for empty file
+  if (fs.readFileSync(path).length === 0) return null;
+
   await readLines(path, async (line) => {
     // End if not YAML
     if (index == 0 && line !== '---') return false;
@@ -128,17 +131,17 @@ export const readMarkdownHeader = async (path: string): Promise<any | null> => {
  */
 export const readXeoMarkdownHeader = async (
   path: string
-): Promise<XeoMarkdownHeader | undefined> => {
+): Promise<XeoMarkdownHeader | null> => {
   const result = await readMarkdownHeader(path);
 
-  if (!result) return undefined;
+  if (!result) return null;
 
-  if (!result.xeo) return undefined;
+  if (!result.xeo) return null;
 
   const xeo = result.xeo;
 
   if (isValidXeoMarkdownHeader(xeo)) return xeo;
-  else return undefined;
+  else return null;
 };
 
 /**
@@ -244,12 +247,15 @@ interface RecursiveProps {
 const recursivelyPopulateDirectoryTree = async (
   tree: DirectoryTree
 ): Promise<RecursiveProps> => {
-  let xeoHeader = await (tree.extension === '.md'
+  // console.log(tree);
+
+  let xeoHeader = await (tree.extension === '.md' && tree.type === 'file'
     ? readXeoMarkdownHeader(tree.path)
     : undefined);
 
   // if the markdown header isn't present, create it, also preserve any other YAML a user may have created
-  if (!xeoHeader) {
+  if (tree.type === 'file' && tree.extension === '.md' && !xeoHeader) {
+    console.log('re-generating: ', tree.path);
     generateXeoMarkdownHeader(tree.path);
   }
 
@@ -296,5 +302,5 @@ export const getPopulatedFileTree = async (
 ): Promise<RecursiveProps> => {
   const tree = getFileTree(path);
 
-  return await recursivelyPopulateDirectoryTree(tree);
+  return recursivelyPopulateDirectoryTree(tree);
 };
