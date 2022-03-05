@@ -1,8 +1,10 @@
 {
-  "cSpell.words": [
-    "Hostable",
-    "normalizr",
-    "prestart",
-    "uuidv"
-  ]
+  "i18n-ally.localesPaths": ["libs/utils/src/content/locales"],
+  "search.exclude": {
+    "build/": true,
+    "dist/": true
+  },
+  "i18n-ally.keystyle": "flat",
+  "cSpell.words": ["jsonb", "overscroll", "pino", "toastify"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

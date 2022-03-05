@@ -1,0 +1,11 @@
+query GetPage($id: ID!) {
+  page(id: $id) {
+    id
+    emoji
+    title
+    titlePlainText
+    body
+    favourite
+    coverGradient
+  }
+}
